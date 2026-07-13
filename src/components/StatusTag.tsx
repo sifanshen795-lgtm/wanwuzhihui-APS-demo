@@ -1,0 +1,48 @@
+import { Tag } from 'antd';
+
+const colorMap: Record<string, string> = {
+  草稿: 'default',
+  已提交: 'blue',
+  已关闭: 'red',
+  未排程: 'orange',
+  已排程: 'cyan',
+  待下推: 'gold',
+  已下推: 'purple',
+  已下发: 'purple',
+  生产中: 'processing',
+  暂停中: 'warning',
+  已完成: 'success',
+  待配方: 'warning',
+  待审核: 'warning',
+  待执行: 'blue',
+  执行中: 'processing',
+  已审核: 'success',
+  可用: 'green',
+  部分使用: 'orange',
+  已用完: 'default',
+  未占用: 'default',
+  已占用: 'green',
+  部分占用: 'orange',
+  已释放: 'default',
+  已消耗: 'blue',
+  报废: 'red',
+  启用: 'green',
+  停用: 'default',
+  禁用: 'default',
+  齐套: 'green',
+  部分齐套: 'orange',
+  不齐套: 'red',
+  MRP未评估: 'default',
+  MRP满足: 'green',
+  MRP部分满足: 'orange',
+  MRP不满足: 'red',
+  库存齐套: 'green',
+  库存部分齐套: 'orange',
+  库存不齐套: 'red',
+  成功: 'green',
+  失败: 'red',
+};
+
+export function StatusTag({ value }: { value?: string }) {
+  return <Tag color={colorMap[value ?? ''] ?? 'default'}>{value ?? '-'}</Tag>;
+}

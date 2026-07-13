@@ -1,0 +1,12 @@
+export type MaterialType = '原料' | '中间物料' | '基准料' | '主产品' | '成品';
+export type ProductionStage = '配色' | '配料' | '挤出';
+export type SalesOrderStatus = '草稿' | '已提交' | '已关闭';
+export type DemandSource = 'ERP' | '手工' | '预测' | '补单';
+export type ProductionOrderStatus = '未排程' | '已排程';
+export type ScheduleItemStatus = '待下推' | '待执行' | '执行中' | '已完成';
+export type BatchWorkOrderStatus = '待配方' | '待审核' | '待执行' | '执行中' | '暂停中' | '已完成';
+export type FormulaStatus = '待审核' | '已审核';
+export type BarcodeStatus = '可用' | '部分使用' | '已用完' | '报废';
+export type BarcodeInventoryStatus = '库内' | '库外' | '厂外';
+export type BarcodeType = '原料' | '中间物料' | '成品' | '基准料';
+export type WorkOrderType = '主产品' | '中间物料';
