@@ -16,6 +16,7 @@ import {
 import { Avatar, Breadcrumb, Button, Input, Layout, Menu, Select } from 'antd';
 import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import logoWanwuzhihui from '../assets/logo-wanwuzhihui.png';
 
 const { Header, Sider, Content } = Layout;
 
@@ -169,7 +170,9 @@ export function PcLayout() {
   return (
     <Layout className="erp-shell">
       <Sider width={siderWidth} theme="light" className="erp-sider">
-        <div className="sider-logo">MES演示</div>
+        <div className="sider-logo">
+          <img src={logoWanwuzhihui} alt="万物智汇 smart" />
+        </div>
         <Menu
           mode="inline"
           className="erp-menu"
