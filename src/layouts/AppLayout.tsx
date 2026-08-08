@@ -7,7 +7,7 @@ export function AppLayout() {
   const location = useLocation();
   return (
     <div className="app-shell app-pad-shell">
-      <NavBar onBack={() => navigate('/')}>MES 现场 PAD</NavBar>
+      <NavBar onBack={() => navigate('/sales-orders')}>MES 现场 PAD</NavBar>
       <div className="app-content"><Outlet /></div>
       <div className="app-tabbar-shell">
         <TabBar activeKey={location.pathname} onChange={(key) => navigate(key)}>

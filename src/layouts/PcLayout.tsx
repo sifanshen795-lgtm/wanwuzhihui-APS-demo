@@ -2,7 +2,6 @@ import {
   AppstoreOutlined,
   BarcodeOutlined,
   BellOutlined,
-  DashboardOutlined,
   DatabaseOutlined,
   FileDoneOutlined,
   HomeOutlined,
@@ -21,7 +20,6 @@ import logoWanwuzhihui from '../assets/logo-wanwuzhihui.png';
 const { Header, Sider, Content } = Layout;
 
 const menuItems = [
-  { key: '/', icon: <DashboardOutlined />, label: '首页' },
   {
     key: 'master', icon: <DatabaseOutlined />, label: '基础数据', children: [
       {
@@ -90,7 +88,6 @@ const MIN_SIDER_WIDTH = 180;
 const MAX_SIDER_WIDTH = 360;
 
 const titleMap: Record<string, string[]> = {
-  '/': ['首页'],
   '/demo': ['Demo 控制台'],
   '/master/materials': ['基础资料', '物料列表'],
   '/master/colors': ['基础资料', '色级列表'],

@@ -79,18 +79,15 @@ export function ProductionCalendarPage() {
       scope: '循环',
       recurrenceType: '每日',
       enabled: true,
-      segmentCount: 2,
+      segmentCount: 1,
       weekdayValues: [1, 2, 3, 4, 5],
       monthDayValues: [],
       effectiveFrom: '2026-06-01',
       effectiveTo: '2026-12-31',
     });
     form.setFieldValue(['segments', 0, 'startTime'], '08:00');
-    form.setFieldValue(['segments', 0, 'endTime'], '12:00');
+    form.setFieldValue(['segments', 0, 'endTime'], '20:00');
     form.setFieldValue(['segments', 0, 'segmentType'], '工作');
-    form.setFieldValue(['segments', 1, 'startTime'], '13:00');
-    form.setFieldValue(['segments', 1, 'endTime'], '20:00');
-    form.setFieldValue(['segments', 1, 'segmentType'], '工作');
   }, [editingRow, form, open]);
 
   useEffect(() => {

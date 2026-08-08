@@ -13,7 +13,6 @@ import { WorkOrderDetailPage } from '../pages/app/WorkOrderDetailPage';
 import { WorkOrderListPage } from '../pages/app/WorkOrderListPage';
 import { BarcodePage } from '../pages/pc/BarcodePage';
 import { BatchWorkOrderPage } from '../pages/pc/BatchWorkOrderPage';
-import { DashboardPage } from '../pages/pc/DashboardPage';
 import { DemoControlPage } from '../pages/pc/DemoControlPage';
 import { FormulaSheetPage } from '../pages/pc/FormulaSheetPage';
 import { InventoryPage } from '../pages/pc/InventoryPage';
@@ -49,7 +48,7 @@ export const router = createHashRouter([
     path: '/',
     element: <PcLayout />,
     children: [
-      { index: true, element: <DashboardPage /> },
+      { index: true, element: <Navigate to="/sales-orders" replace /> },
       { path: 'demo', element: <DemoControlPage /> },
       { path: 'master/materials', element: <BaseMaterialPage /> },
       { path: 'master/colors', element: <BaseMaterialColorPage /> },

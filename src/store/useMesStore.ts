@@ -1533,6 +1533,7 @@ export const useMesStore = create<MesStore>()(
           transferRecords: persistedArrayOrCurrent(persistedState.transferRecords, current.transferRecords),
           lossRecords: persistedArrayOrCurrent(persistedState.lossRecords, current.lossRecords),
           scheduleRules: normalizeScheduleRules(persistedState.scheduleRules ?? current.scheduleRules),
+          productionCalendars: current.productionCalendars,
           bomHeaders: nextBomHeaders,
           bomItems: nextBomItems,
           productionForms: persistedArrayOrCurrent(persistedState.productionForms, current.productionForms),

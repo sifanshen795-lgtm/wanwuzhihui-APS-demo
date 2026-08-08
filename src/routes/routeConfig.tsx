@@ -1,5 +1,4 @@
 export const pcRouteTitles = {
-  '/': '首页看板',
   '/demo': 'Demo 控制台',
   '/master/materials': '基础资料-物料列表',
   '/master/colors': '基础资料-色级列表',
