@@ -191,7 +191,7 @@ export function PcLayout() {
             <Button type="text" icon={<ReloadOutlined />} />
             <Button type="text" icon={<SettingOutlined />} />
             <Button type="text" icon={<BellOutlined />} />
-            <Select className="company-select" value="泉州宇极新材料科技有限公司" options={[{ value: '泉州宇极新材料科技有限公司', label: '泉州宇极新材料科技有限公司' }]} />
+            <Select className="company-select" value="万物智汇" options={[{ value: '万物智汇', label: '万物智汇' }]} />
             <Avatar style={{ background: '#dbeafe', color: '#0f4c9a' }}>PM</Avatar>
           </div>
         </Header>
