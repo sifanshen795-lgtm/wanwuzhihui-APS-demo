@@ -23,6 +23,9 @@ import { feedByBarcode, feedFromTank, makeExecutionRecord, packageWorkOrder, tra
 import { nowIso } from '../domain/services/helpers';
 import { createSeedData } from '../mock/seedData';
 
+const PERSIST_NAME = 'jinyang-mes-demo';
+const PERSIST_VERSION = 2;
+
 type ValidationBaseline = Pick<MesStateData,
   | 'materials'
   | 'colorGrades'
@@ -452,6 +455,20 @@ const normalizeProductionCrafts = (crafts: ProductionCraft[]) => crafts.map((cra
 }));
 const cloneData = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 
+const createResetDemoState = (validationBaseline: ValidationBaseline | null = null) => {
+  const nextSeed = createSeedData();
+  return {
+    ...nextSeed,
+    validationBaseline,
+    materials: normalizeMaterials(nextSeed.materials),
+    mrpRule: normalizeMrpRule(nextSeed.mrpRule),
+    scheduleRules: normalizeScheduleRules(nextSeed.scheduleRules),
+    inventory: normalizeInventoryItems(nextSeed.inventory),
+    barcodes: normalizeBarcodes(nextSeed.barcodes),
+    tanks: normalizeTanks(nextSeed.tanks),
+  };
+};
+
 const normalizeBaselineSalesOrders = (salesOrders: MesStateData['salesOrders']) => normalizeSalesOrderSortOrders(sortSalesOrdersByManualOrder(salesOrders.map((order) => ({
   ...order,
   demandSource: order.demandSource ?? 'ERP',
@@ -535,8 +552,12 @@ export const useMesStore = create<MesStore>()(
       barcodes: normalizeBarcodes(seed.barcodes),
       tanks: normalizeTanks(seed.tanks),
       resetDemo: () => {
-        const nextSeed = createSeedData();
-        set({ ...nextSeed, validationBaseline: get().validationBaseline ?? null, mrpRule: normalizeMrpRule(nextSeed.mrpRule), scheduleRules: normalizeScheduleRules(nextSeed.scheduleRules), inventory: normalizeInventoryItems(nextSeed.inventory), barcodes: normalizeBarcodes(nextSeed.barcodes), tanks: normalizeTanks(nextSeed.tanks) });
+        try {
+          localStorage.removeItem(PERSIST_NAME);
+        } catch {
+          // ignore storage errors and still restore seed in memory
+        }
+        set(createResetDemoState(null));
       },
       saveValidationBaselineAction: () => {
         set({ validationBaseline: createValidationBaseline(get()) });
@@ -1444,7 +1465,14 @@ export const useMesStore = create<MesStore>()(
       },
     }),
     {
-      name: 'jinyang-mes-demo',
+      name: PERSIST_NAME,
+      version: PERSIST_VERSION,
+      migrate: (persistedState, version) => {
+        if (version < PERSIST_VERSION) {
+          return createResetDemoState(null);
+        }
+        return persistedState as MesStore;
+      },
       merge: (persisted, current) => {
         const persistedState = persisted as Partial<MesStore>;
         const maintainedBomCode = 'BOM-PROD-A';
