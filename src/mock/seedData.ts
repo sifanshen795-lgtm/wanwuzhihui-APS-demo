@@ -1,4 +1,22 @@
-import type { MesStateData } from '../domain/models/mes';
+import type { MesStateData, SalesOrder } from '../domain/models/mes';
+
+const createDemoSalesOrder = (
+  order: Pick<SalesOrder, 'id' | 'customerCode' | 'quantity' | 'deliveryDate' | 'sortOrder' | 'createdAt'>
+    & Partial<Omit<SalesOrder, 'id' | 'customerCode' | 'quantity' | 'deliveryDate' | 'sortOrder' | 'createdAt'>>,
+): SalesOrder => ({
+  productCode: 'PROD-A',
+  unit: 'kg',
+  packageRequirement: '25kg/包',
+  demandSource: 'ERP',
+  status: '已提交',
+  pushedQuantity: 0,
+  remainingQuantity: order.quantity,
+  productionOrderIds: [],
+  kitReadyStatus: '未评估',
+  kitReadyQuantity: 0,
+  shortageLines: [],
+  ...order,
+});
 
 export const createSeedData = (): MesStateData => ({
   materials: [
@@ -46,6 +64,21 @@ export const createSeedData = (): MesStateData => ({
       enabled: true,
       createdBy: '斩叶龙',
       createdAt: '2026-06-01T09:00:00.000Z',
+    },
+    {
+      code: 'CUST-C',
+      name: '福州远航塑业有限公司',
+      shortName: '远航塑业',
+      type: '终端客户',
+      address: '福建省福州市仓山区工业路 128 号',
+      contact: '陈伟',
+      phone: '13800000003',
+      email: 'yh@example.com',
+      sales: '斩叶龙',
+      remark: 'Demo 客户 C，用于验证不同客户拆单',
+      enabled: true,
+      createdBy: '斩叶龙',
+      createdAt: '2026-06-01T10:00:00.000Z',
     },
   ],
   units: [
@@ -240,8 +273,16 @@ export const createSeedData = (): MesStateData => ({
     { code: 'lightToDark', name: '由浅至深生产', enabled: true, priority: 5, remark: '按色级排序从浅到深' },
   ],
   salesOrders: [
-    { id: 'SO001', customerCode: 'CUST-A', productCode: 'PROD-A', quantity: 3000, unit: 'kg', deliveryDate: '2026-06-10', packageRequirement: '25kg/包', demandSource: 'ERP', status: '已提交', sortOrder: 1, pushedQuantity: 0, remainingQuantity: 3000, productionOrderIds: [], kitReadyStatus: '未评估', shortageLines: [], createdAt: '2026-06-01T09:00:00.000Z' },
-    { id: 'SO002', customerCode: 'CUST-B', productCode: 'PROD-A', quantity: 2000, unit: 'kg', deliveryDate: '2026-06-11', packageRequirement: '25kg/包', demandSource: 'ERP', status: '已提交', sortOrder: 2, pushedQuantity: 0, remainingQuantity: 2000, productionOrderIds: [], kitReadyStatus: '未评估', shortageLines: [], createdAt: '2026-06-01T10:00:00.000Z' },
+    // 即时库存约可齐套 3000kg；09-08 预计入库后再放开约 2000kg。按 sortOrder 占用物料。
+    createDemoSalesOrder({ id: 'SO001', customerCode: 'CUST-A', quantity: 800, deliveryDate: '2026-09-08', sortOrder: 1, createdAt: '2026-09-01T09:00:00.000Z' }),
+    createDemoSalesOrder({ id: 'SO002', customerCode: 'CUST-A', quantity: 700, deliveryDate: '2026-09-08', sortOrder: 2, createdAt: '2026-09-01T09:10:00.000Z' }),
+    createDemoSalesOrder({ id: 'SO003', customerCode: 'CUST-B', quantity: 500, deliveryDate: '2026-09-08', sortOrder: 3, createdAt: '2026-09-01T09:20:00.000Z' }),
+    createDemoSalesOrder({ id: 'SO004', customerCode: 'CUST-C', quantity: 400, deliveryDate: '2026-09-09', sortOrder: 4, createdAt: '2026-09-01T09:30:00.000Z' }),
+    createDemoSalesOrder({ id: 'SO005', customerCode: 'CUST-A', quantity: 1000, deliveryDate: '2026-09-10', sortOrder: 5, createdAt: '2026-09-01T09:40:00.000Z' }),
+    createDemoSalesOrder({ id: 'SO006', customerCode: 'CUST-B', quantity: 600, deliveryDate: '2026-09-10', packageRequirement: '50kg/包', demandSource: '手工', sortOrder: 6, createdAt: '2026-09-01T09:50:00.000Z' }),
+    createDemoSalesOrder({ id: 'SO007', customerCode: 'CUST-A', quantity: 1500, deliveryDate: '2026-09-12', sortOrder: 7, createdAt: '2026-09-01T10:00:00.000Z' }),
+    createDemoSalesOrder({ id: 'SO008', customerCode: 'CUST-B', quantity: 3000, deliveryDate: '2026-09-18', demandSource: '预测', sortOrder: 8, createdAt: '2026-09-01T10:10:00.000Z' }),
+    createDemoSalesOrder({ id: 'SO009', customerCode: 'CUST-A', quantity: 400, deliveryDate: '2026-09-20', demandSource: '补单', status: '草稿', sortOrder: 9, createdAt: '2026-09-01T10:20:00.000Z' }),
   ],
   mrpLogs: [],
   productionOrders: [],
@@ -250,9 +291,10 @@ export const createSeedData = (): MesStateData => ({
   batchWorkOrders: [],
   formulaSheets: [],
   barcodes: [
-    { code: 'BC-PP-001', type: '原料', materialCode: 'MAT-PP', batchNo: 'PP20260601', initialQuantity: 5000, remainingQuantity: 5000, unit: 'kg', source: 'ERP', status: '可用', inventoryStatus: '库内', createdAt: '2026-06-01T08:00:00.000Z' },
-    { code: 'BC-AD-001', type: '原料', materialCode: 'MAT-AD-A', batchNo: 'AD20260601', initialQuantity: 500, remainingQuantity: 500, unit: 'kg', source: 'ERP', status: '可用', inventoryStatus: '库内', createdAt: '2026-06-01T08:00:00.000Z' },
-    { code: 'BC-BASE-001', type: '基准料', materialCode: 'MAT-BASE-B', batchNo: 'BASE20260601', initialQuantity: 1000, remainingQuantity: 1000, unit: 'kg', source: 'ERP', status: '可用', inventoryStatus: '库内', createdAt: '2026-06-01T08:00:00.000Z' },
+    { code: 'BC-PP-001', type: '原料', materialCode: 'MAT-PP', batchNo: 'PP20260601', initialQuantity: 290, remainingQuantity: 290, unit: 'kg', source: 'ERP', status: '可用', inventoryStatus: '库内', createdAt: '2026-06-01T08:00:00.000Z' },
+    { code: 'BC-AD-001', type: '原料', materialCode: 'MAT-AD-A', batchNo: 'AD20260601', initialQuantity: 25, remainingQuantity: 25, unit: 'kg', source: 'ERP', status: '可用', inventoryStatus: '库内', createdAt: '2026-06-01T08:00:00.000Z' },
+    { code: 'BC-BASE-001', type: '基准料', materialCode: 'MAT-BASE-B', batchNo: 'BASE20260601', initialQuantity: 300, remainingQuantity: 300, unit: 'kg', source: 'ERP', status: '可用', inventoryStatus: '库内', createdAt: '2026-06-01T08:00:00.000Z' },
+    { code: 'BC-COLOR-001', type: '中间物料', materialCode: 'INT-COLOR-A', batchNo: 'COLOR20260601', initialQuantity: 120, remainingQuantity: 120, unit: 'kg', source: 'MES', status: '可用', inventoryStatus: '库内', createdAt: '2026-06-01T08:00:00.000Z' },
   ],
   tanks: [{ code: 'TANK-01', name: '基准料储罐 01', materialCode: 'MAT-BASE-B', currentQuantity: 300, unit: 'kg', lineCode: 'LINE-EXT-01', inventoryStatus: '库外', enabled: true }],
   inventory: [
@@ -260,6 +302,9 @@ export const createSeedData = (): MesStateData => ({
     { id: 'INV-AD-A', materialCode: 'MAT-AD-A', materialType: '原料', batchNo: '', quantity: 25, unit: 'kg', source: 'ERP', inventoryKind: '即时库存', inventoryLocation: '仓库', updatedAt: '2026-06-01T08:00:00.000Z' },
     { id: 'INV-PP', materialCode: 'MAT-PP', materialType: '原料', batchNo: '', quantity: 290, unit: 'kg', source: 'ERP', inventoryKind: '即时库存', inventoryLocation: '仓库', updatedAt: '2026-06-01T08:00:00.000Z' },
     { id: 'INV-COLOR-A', materialCode: 'INT-COLOR-A', materialType: '中间物料', batchNo: '', quantity: 120, unit: 'kg', source: 'MES', inventoryKind: '即时库存', inventoryLocation: '仓库', updatedAt: '2026-06-01T08:00:00.000Z' },
+    { id: 'INV-PLAN-COLOR-A', materialCode: 'INT-COLOR-A', materialType: '中间物料', batchNo: 'COLOR20260908', plannedDate: '2026-09-08', quantity: 80, unit: 'kg', source: 'ERP', inventoryKind: '预计入库', inventoryLocation: '仓库', updatedAt: '2026-09-01T08:00:00.000Z' },
+    { id: 'INV-PLAN-PP', materialCode: 'MAT-PP', materialType: '原料', batchNo: 'PP20260908', plannedDate: '2026-09-08', quantity: 200, unit: 'kg', source: 'ERP', inventoryKind: '预计入库', inventoryLocation: '仓库', updatedAt: '2026-09-01T08:00:00.000Z' },
+    { id: 'INV-PLAN-AD-A', materialCode: 'MAT-AD-A', materialType: '原料', batchNo: 'AD20260908', plannedDate: '2026-09-08', quantity: 20, unit: 'kg', source: 'ERP', inventoryKind: '预计入库', inventoryLocation: '仓库', updatedAt: '2026-09-01T08:00:00.000Z' },
   ],
   inventoryReservations: [],
   materialShortages: [],
