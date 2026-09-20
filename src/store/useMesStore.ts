@@ -24,7 +24,7 @@ import { nowIso } from '../domain/services/helpers';
 import { createSeedData } from '../mock/seedData';
 
 const PERSIST_NAME = 'jinyang-mes-demo';
-const PERSIST_VERSION = 2;
+const PERSIST_VERSION = 3;
 
 type ValidationBaseline = Pick<MesStateData,
   | 'materials'
@@ -382,6 +382,54 @@ const applyMrpAutoPush = (
   };
 };
 
+const applyInitialMrp = (data: MesStateData): Partial<MesStateData> => {
+  const submitOrders = data.salesOrders.filter((order) => order.status === '已提交');
+  if (!submitOrders.length) return {};
+  const runIds = submitOrders.map((order) => order.id);
+  const sortedData = { ...data, salesOrders: sortSalesOrdersByManualOrder(data.salesOrders) };
+  const result = runMrp(sortedData, runIds);
+  const mrpUpdatedSalesOrders = data.salesOrders.map((order) => {
+    if (order.status !== '已提交') return order;
+    const latest = result.orderStatusMap.get(order.id);
+    return {
+      ...order,
+      demandSource: order.demandSource ?? 'ERP',
+      kitReadyStatus: latest?.kitReadyStatus ?? order.kitReadyStatus,
+      kitReadyQuantity: latest?.producibleQuantity ?? order.kitReadyQuantity ?? 0,
+      mrpFulfillmentDate: latest?.mrpFulfillmentDate,
+      shortageLines: latest?.shortageLines ?? order.shortageLines,
+    };
+  });
+  const sortedDataWithMrp = { ...sortedData, salesOrders: mrpUpdatedSalesOrders };
+  const autoPush = applyMrpAutoPush(sortedDataWithMrp, result.orderStatusMap, runIds);
+  const shortageMap = aggregateShortageLines(
+    sortedDataWithMrp,
+    autoPush.productionOrders,
+    autoPush.materialRequirements,
+  );
+  const salesOrders = syncSalesOrdersAfterProductionOrderChanges(
+    sortedDataWithMrp,
+    autoPush.productionOrders,
+    shortageMap,
+  );
+  const mrpLog = {
+    ...result.log,
+    productionOrderIds: [...data.productionOrders.map((order) => order.id), ...autoPush.newProductionOrderIds],
+    remark: autoPush.newProductionOrderIds.length
+      ? `MRP 运算完成，自动生成 ${autoPush.newProductionOrderIds.length} 张生产订单`
+      : 'MRP 运算完成，无缺料齐套部分可自动下推',
+  };
+  return {
+    salesOrders,
+    productionOrders: autoPush.productionOrders,
+    materialRequirements: autoPush.materialRequirements,
+    scheduleItems: autoPush.scheduleItems,
+    inventoryReservations: autoPush.inventoryReservations,
+    mrpLogs: [...data.mrpLogs, mrpLog],
+    materialShortages: result.shortageSummaries,
+  };
+};
+
 const normalizeInventoryItem = (item: InventoryItem): InventoryItem => ({
   ...item,
   inventoryKind: item.inventoryKind ?? '即时库存',
@@ -457,7 +505,7 @@ const cloneData = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 
 const createResetDemoState = (validationBaseline: ValidationBaseline | null = null) => {
   const nextSeed = createSeedData();
-  return {
+  const normalized = {
     ...nextSeed,
     validationBaseline,
     materials: normalizeMaterials(nextSeed.materials),
@@ -466,6 +514,10 @@ const createResetDemoState = (validationBaseline: ValidationBaseline | null = nu
     inventory: normalizeInventoryItems(nextSeed.inventory),
     barcodes: normalizeBarcodes(nextSeed.barcodes),
     tanks: normalizeTanks(nextSeed.tanks),
+  };
+  return {
+    ...normalized,
+    ...applyInitialMrp(normalized),
   };
 };
 
@@ -543,14 +595,7 @@ const restoreValidationBaseline = (baseline: ValidationBaseline) => ({
 export const useMesStore = create<MesStore>()(
   persist(
     (set, get) => ({
-      ...seed,
-      validationBaseline: null,
-      materials: normalizeMaterials(seed.materials),
-      mrpRule: normalizeMrpRule(seed.mrpRule),
-      scheduleRules: normalizeScheduleRules(seed.scheduleRules),
-      inventory: normalizeInventoryItems(seed.inventory),
-      barcodes: normalizeBarcodes(seed.barcodes),
-      tanks: normalizeTanks(seed.tanks),
+      ...createResetDemoState(null),
       resetDemo: () => {
         try {
           localStorage.removeItem(PERSIST_NAME);
@@ -1144,49 +1189,7 @@ export const useMesStore = create<MesStore>()(
         if (!submitOrders.length) {
           throw new Error('请先准备已提交的销售订单');
         }
-        const runIds = submitOrders.map((order) => order.id);
-        const sortedData = { ...data, salesOrders: sortSalesOrdersByManualOrder(data.salesOrders) };
-        const result = runMrp(sortedData, runIds);
-        const mrpUpdatedSalesOrders = data.salesOrders.map((order) => {
-          if (order.status !== '已提交') return order;
-          const latest = result.orderStatusMap.get(order.id);
-          return {
-            ...order,
-            demandSource: order.demandSource ?? 'ERP',
-            kitReadyStatus: latest?.kitReadyStatus ?? order.kitReadyStatus,
-            kitReadyQuantity: latest?.producibleQuantity ?? order.kitReadyQuantity ?? 0,
-            mrpFulfillmentDate: latest?.mrpFulfillmentDate,
-            shortageLines: latest?.shortageLines ?? order.shortageLines,
-          };
-        });
-        const sortedDataWithMrp = { ...sortedData, salesOrders: mrpUpdatedSalesOrders };
-        const autoPush = applyMrpAutoPush(sortedDataWithMrp, result.orderStatusMap, runIds);
-        const shortageMap = aggregateShortageLines(
-          sortedDataWithMrp,
-          autoPush.productionOrders,
-          autoPush.materialRequirements,
-        );
-        const salesOrders = syncSalesOrdersAfterProductionOrderChanges(
-          sortedDataWithMrp,
-          autoPush.productionOrders,
-          shortageMap,
-        );
-        const mrpLog = {
-          ...result.log,
-          productionOrderIds: [...data.productionOrders.map((order) => order.id), ...autoPush.newProductionOrderIds],
-          remark: autoPush.newProductionOrderIds.length
-            ? `MRP 运算完成，自动生成 ${autoPush.newProductionOrderIds.length} 张生产订单`
-            : 'MRP 运算完成，无缺料齐套部分可自动下推',
-        };
-        set({
-          salesOrders,
-          productionOrders: autoPush.productionOrders,
-          materialRequirements: autoPush.materialRequirements,
-          scheduleItems: autoPush.scheduleItems,
-          inventoryReservations: autoPush.inventoryReservations,
-          mrpLogs: [...data.mrpLogs, mrpLog],
-          materialShortages: result.shortageSummaries,
-        });
+        set(applyInitialMrp(data));
       },
       pushDownSchedule: (scheduleItemIds) => {
         const data = get();
