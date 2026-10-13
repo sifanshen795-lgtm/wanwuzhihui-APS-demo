@@ -111,7 +111,17 @@ const ganttStatusColor: Record<GanttDisplayStatus, string> = {
   排程单执行中: '#FF7D00',
   排程单已完成: '#00B42A',
 };
-const ganttStatusLabels: GanttDisplayStatus[] = ['已排程', '已下推排程单', '排程单待执行', '排程单执行中', '排程单已完成'];
+const coatingBarStyle: Record<string, { background: string; color: string }> = {
+  'CG-01': { background: '#F4F0E6', color: '#1D2129' },
+  'CG-02': { background: '#6FA8D0', color: '#FFFFFF' },
+  'CG-03': { background: '#E2B15C', color: '#1D2129' },
+  'CG-04': { background: '#5E6E80', color: '#FFFFFF' },
+  'CG-05': { background: '#2A3038', color: '#FFFFFF' },
+};
+const productShortName = (name: string) => {
+  const parts = name.split('·').map((part) => part.trim()).filter(Boolean);
+  return parts[parts.length - 1] || name;
+};
 const getGanttDisplayStatus = (item: GanttItem): GanttDisplayStatus => {
   if (item.ganttStatus) return item.ganttStatus;
   if (item.status === '已完成') return '排程单已完成';
@@ -134,7 +144,7 @@ export function SimpleGantt({
   onHourWidthChange,
 }: {
   items: GanttItem[];
-  data: Pick<MesStateData, 'lines' | 'materials' | 'productionCalendars'>;
+  data: Pick<MesStateData, 'lines' | 'materials' | 'productionCalendars'> & Partial<Pick<MesStateData, 'colorGrades'>>;
   onItemClick?: (item: GanttItem) => void;
   onItemEdit?: (item: GanttItem) => void;
   onItemWindowChange?: (item: GanttItem, payload: { lineCode: string; startAt: string; endAt: string }) => void;
@@ -457,12 +467,15 @@ export function SimpleGantt({
         >
           <div className="simple-gantt-content">
             <div className="gantt-status-legend">
-              {ganttStatusLabels.map((status) => (
-                <span key={status}>
-                  <i style={{ background: ganttStatusColor[status] }} />
-                  {status}
-                </span>
-              ))}
+              {(data.colorGrades ?? [])
+                .filter((grade) => items.some((item) => data.materials.find((material) => material.code === item.productCode)?.colorGradeCode === grade.code))
+                .sort((left, right) => left.sort - right.sort)
+                .map((grade) => (
+                  <span key={grade.code}>
+                    <i style={{ background: coatingBarStyle[grade.code]?.background ?? '#86909C', border: '1px solid rgba(29,33,41,0.12)' }} />
+                    {grade.name}
+                  </span>
+                ))}
             </div>
             <div className="gantt-axis">
               <div className="gantt-axis-months">
@@ -525,7 +538,12 @@ export function SimpleGantt({
                     const left = ((clippedStartMs - minStart) / totalMs) * 100;
                     const width = Math.max(2, ((clippedEndMs - clippedStartMs) / totalMs) * 100);
                     const displayStatus = getGanttDisplayStatus(item);
-                    const isShort = width < 18;
+                    const product = data.materials.find((material) => material.code === item.productCode);
+                    const barStyle = (product?.colorGradeCode && coatingBarStyle[product.colorGradeCode]) || {
+                      background: ganttStatusColor[displayStatus],
+                      color: '#FFFFFF',
+                    };
+                    const isShort = width < 8;
                     const canDrag = editable && (canEditItem ? canEditItem(item) : item.status === '待下推');
                     const itemDuration = Math.max(1, clippedEndMs - clippedStartMs);
                     const itemRestSegments = restSegments
@@ -544,7 +562,7 @@ export function SimpleGantt({
                         onMouseMove={(event) => updateItemTooltip(item, event)}
                         onMouseLeave={() => setHoverTooltip(null)}
                         onContextMenu={(event) => openContextMenu(item, canDrag, event)}
-                        style={{ left: `${left}%`, width: `${width}%`, '--gantt-bar-bg': ganttStatusColor[displayStatus] } as CSSProperties}
+                        style={{ left: `${left}%`, width: `${width}%`, '--gantt-bar-bg': barStyle.background, '--gantt-bar-ink': barStyle.color } as CSSProperties}
                       >
                         {canDrag ? (
                           <>
@@ -564,8 +582,8 @@ export function SimpleGantt({
                           );
                         })}
                         <span className="gantt-bar-text">
-                          <em>{displayStatus === '已排程' ? '未输出' : item.id}</em>
-                          <small>{displayStatus}</small>
+                          <b>{productShortName(materialName(data, item.productCode))}</b>
+                          {!isShort ? <small>{item.batchCount}锅</small> : null}
                         </span>
                       </div>
                     );

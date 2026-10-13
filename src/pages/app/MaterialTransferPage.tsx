@@ -13,7 +13,7 @@ export function MaterialTransferPage() {
   return (
     <div>
       <Card title="基准料转储罐">
-        <div className="scan-box">基准料从袋装条码转移至虚拟储罐，供多个挤出工单投料。</div>
+        <div className="scan-box">钛白基准浆从袋装条码转移至虚拟储罐，供多个调漆工单投料。</div>
         <Form
           footer={<Button block color="primary" type="submit">确认转移</Button>}
           onFinish={(values) => {

@@ -170,7 +170,7 @@ export function ProductGroupRelationPage() {
             <Input placeholder="如 PG-01" />
           </Form.Item>
           <Form.Item name="name" label="产品组名称" rules={[{ required: true, message: '请输入产品组名称' }]}>
-            <Input placeholder="如 改性塑料组" />
+            <Input placeholder="如 水性建筑涂料" />
           </Form.Item>
           <Form.Item name="materials" label="包含物料" rules={[{ required: true, message: '请选择包含物料' }]}>
             <Select mode="multiple" showSearch placeholder="选择主产品/成品/中间物料" options={materialOptions} optionFilterProp="label" />

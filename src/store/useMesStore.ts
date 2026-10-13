@@ -24,7 +24,7 @@ import { nowIso } from '../domain/services/helpers';
 import { createSeedData } from '../mock/seedData';
 
 const PERSIST_NAME = 'jinyang-mes-demo';
-const PERSIST_VERSION = 3;
+const PERSIST_VERSION = 4;
 
 type ValidationBaseline = Pick<MesStateData,
   | 'materials'

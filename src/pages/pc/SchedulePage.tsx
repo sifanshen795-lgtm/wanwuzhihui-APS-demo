@@ -14,8 +14,11 @@ import { useMesStore } from '../../store/useMesStore';
 import { lineName, materialName } from '../../utils/display';
 
 const { RangePicker } = DatePicker;
-const DEFAULT_GANTT_HOUR_WIDTH = 1;
-const getDefaultScheduleRange = (): [Dayjs, Dayjs] => [dayjs().startOf('month'), dayjs().endOf('month')];
+const DEFAULT_GANTT_HOUR_WIDTH = 56;
+const getDefaultScheduleRange = (): [Dayjs, Dayjs] => [
+  dayjs().add(1, 'day').hour(8).minute(0).second(0).millisecond(0),
+  dayjs().add(1, 'day').hour(20).minute(0).second(0).millisecond(0),
+];
 const hasSchedulePlan = (order: ProductionOrder) => Boolean(order.lineCode && order.plannedStartAt && order.plannedEndAt && order.batchCount);
 
 export function SchedulePage() {
@@ -282,7 +285,12 @@ export function SchedulePage() {
         <Card className="demo-card schedule-gantt-pane" title="甘特图" extra={<span style={{ color: 'var(--color-text-secondary)' }}>{ganttItems.length} 条 · 已输出排程单自动锁定</span>}>
           <SimpleGantt
             items={ganttItems}
-            data={store}
+            data={{
+              lines: store.lines.filter((line) => line.enabled && line.stage === '挤出'),
+              materials: store.materials,
+              productionCalendars: store.productionCalendars,
+              colorGrades: store.colorGrades,
+            }}
             editable
             visibleStartAt={appliedFilters.timeRange?.[0]?.toISOString()}
             visibleEndAt={appliedFilters.timeRange?.[1]?.toISOString()}

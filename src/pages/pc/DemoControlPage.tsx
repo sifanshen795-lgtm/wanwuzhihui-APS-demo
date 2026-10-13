@@ -32,12 +32,12 @@ export function DemoControlPage() {
           <Button onClick={() => run(store.createSalesOrderAction, '已生成样例订单')}>生成样例订单</Button>
           <Button type="primary" onClick={() => run(() => store.runMrpForOrders(), 'MRP 运算完成')} disabled={!submittedCount}>执行 MRP</Button>
           <Button onClick={() => {
-            const pendingOrder = store.productionOrders.find((item) => item.status === '未排程');
-            if (!pendingOrder) {
+            const pendingIds = store.productionOrders.filter((item) => item.status === '未排程').map((item) => item.id);
+            if (!pendingIds.length) {
               message.warning('没有未排程的生产订单');
               return;
             }
-            run(() => store.pushProductionOrderToScheduleAction(pendingOrder.id), '已生成排程方案');
+            run(() => store.pushProductionOrdersToScheduleAction(pendingIds), `已为 ${pendingIds.length} 张生产订单生成排程方案`);
           }}>生成排程方案</Button>
           <Button onClick={() => {
             const plannedOrder = store.productionOrders.find((item) => item.status === '已排程' && !store.scheduleItems.some((schedule) => schedule.productionOrderId === item.id));
